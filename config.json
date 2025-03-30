@@ -1,6 +1,10 @@
 {
-  "example": {
+  "realt": {
     "url": "https://realt.by/rent/flat-for-long/?addressV2=%5B%7B%22metroStationUuid%22%3A%22481cb081-7b00-11eb-8943-0cc47adabd66%22%7D%5D&page=1&priceFrom=300&priceTo=370&priceType=840&rooms=1",
     "command": "[...document.querySelectorAll('[data-index]')].map(a=>a.firstChild).map(x=>x.querySelector('a').href)"
+  },
+  "kufar": {
+    "url": "https://re.kufar.by/l/minsk/snyat/kvartiru-dolgosrochno/1k?cur=USD&gbx=b%3A27.513526658471655%2C53.88229558111987%2C27.53112194960936%2C53.894363476915245&prc=r%3A300%2C400&size=30",
+    "command": "[...document.querySelectorAll(`a[data-testid^='kufar-realty-card-']`)].map(a=>a.href)"
   }
 }

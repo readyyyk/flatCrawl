@@ -7,6 +7,7 @@ A simple application that opens a browser with URLs provided in configuration, e
 - Opens a browser with the URL provided in the configuration
 - Executes JavaScript commands within the browser context to extract links
 - Writes links to a CSV file with metadata
+- Checks for duplicate links to avoid adding the same link multiple times
 - Can process a single source or all sources at once
 - Supports browser automation with Puppeteer
 
@@ -56,6 +57,11 @@ Each source should have:
 "[...document.querySelectorAll('a')].map(a => a.href).filter(href => href.includes('article'))"
 ```
 
+4. Extract links from real estate listings:
+```
+"[...document.querySelectorAll('[data-index]')].map(a=>a.firstChild).map(x=>x.querySelector('a').href)"
+```
+
 ## Usage
 
 ### Build the application
@@ -90,6 +96,15 @@ The application writes links to a CSV file (`urls.csv`) with the following colum
 - `ok`: Whether the link is OK (boolean, default: false)
 - `called`: Whether the link has been called (boolean, default: false)
 - `active`: Whether the link is active (boolean, default: false)
+
+## Duplicate Handling
+
+The application checks if a link already exists in the CSV file before adding it. This prevents duplicate entries and keeps the CSV file clean. When running the application, it will:
+
+1. Read all existing links from the CSV file
+2. Compare new links found in the browser against the existing links
+3. Only add links that don't already exist in the CSV file
+4. Report how many duplicates were filtered out
 
 ## Development
 
