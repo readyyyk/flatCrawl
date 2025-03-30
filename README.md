@@ -163,7 +163,7 @@ pnpm run start-and-sync
 
 ## UI Viewer
 
-FlatCrawl includes a web-based UI for viewing and editing your data, with GitHub Gists integration.
+FlatCrawl includes a web-based UI for viewing and editing your data, with direct GitHub Gists integration.
 
 ### Features
 
@@ -172,14 +172,21 @@ FlatCrawl includes a web-based UI for viewing and editing your data, with GitHub
 - Save changes to the local CSV file
 - Sync changes to GitHub Gists
 - Responsive design that works on desktop and mobile
+- **Direct GitHub Gist Integration**: Loads data directly from your GitHub Gist
 
 ### Setup
 
-The UI viewer requires the same setup as the GitHub Gists integration (see above).
+1. The UI viewer requires the same setup as the GitHub Gists integration (see above).
+2. Update the Gist URL in the `viewer.html` file to point to your own Gist:
+   ```javascript
+   const gistUrl = 'https://gist.githubusercontent.com/yourusername/yourgistid/raw/yourfilename';
+   ```
 
 ### Usage
 
-Start the UI viewer:
+#### Option 1: Using the Express Server
+
+Start the UI viewer with the Express server:
 
 ```bash
 pnpm run viewer
@@ -191,18 +198,34 @@ Then open your browser to:
 http://localhost:3000
 ```
 
+#### Option 2: Direct HTML File (Recommended)
+
+Simply open the `viewer.html` file directly in your browser:
+
+```bash
+# On macOS
+open viewer.html
+
+# On Windows
+start viewer.html
+
+# On Linux
+xdg-open viewer.html
+```
+
 ### Using the UI
 
-1. **View Data**: All your scraped URLs will be displayed in a table
+1. **View Data**: All your scraped URLs will be displayed in a table, loaded directly from GitHub Gist
 2. **Edit Data**: Toggle the checkboxes to change boolean values
 3. **Save Changes**: Click the "Save Changes" button to update the local CSV file
 4. **Sync to Gist**: Click the "Sync to GitHub Gist" button to sync your changes to GitHub
 
 ### Notes
 
-- The UI automatically loads data from your local CSV file
+- The UI automatically loads data directly from your GitHub Gist
 - Changes are not saved until you click the "Save Changes" button
 - Syncing to GitHub Gist is a separate step after saving
+- The viewer works offline once loaded, but requires internet connection to fetch the latest data and sync changes
 
 ## Development
 
