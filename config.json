@@ -1,0 +1,6 @@
+{
+  "example": {
+    "url": "https://realt.by/rent/flat-for-long/?addressV2=%5B%7B%22metroStationUuid%22%3A%22481cb081-7b00-11eb-8943-0cc47adabd66%22%7D%5D&page=1&priceFrom=300&priceTo=370&priceType=840&rooms=1",
+    "command": "[...document.querySelectorAll('[data-index]')].map(a=>a.firstChild).map(x=>x.querySelector('a').href)"
+  }
+}
