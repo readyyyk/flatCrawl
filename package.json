@@ -10,11 +10,11 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "tsx index.ts",
-    "sync-to-gist": "tsx syncToGist.ts",
-    "start-and-sync": "pnpm run start && pnpm run sync-to-gist",
-    "viewer": "node server.js"
+    "start": "node dist/index.js scrape",
+    "dev": "tsx src/index.ts scrape",
+    "serve": "tsx src/index.ts serve",
+    "sync": "tsx src/index.ts sync",
+    "start-and-sync": "pnpm run start && pnpm run sync"
   },
   "keywords": [
     "browser",
@@ -26,8 +26,9 @@
   "license": "ISC",
   "dependencies": {
     "@octokit/rest": "^19.0.7",
-    "csv-parser": "^3.2.0",
+    "commander": "^13.1.0",
     "csv-parse": "^5.5.5",
+    "csv-parser": "^3.2.0",
     "csv-stringify": "^6.4.6",
     "dotenv": "^16.0.3",
     "express": "^4.18.3",
@@ -35,6 +36,7 @@
     "puppeteer": "^24.4.0"
   },
   "devDependencies": {
+    "@types/express": "^5.0.1",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.17.28",
     "typescript": "^5.8.2"

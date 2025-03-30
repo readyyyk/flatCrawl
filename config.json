@@ -5,6 +5,9 @@
   },
   "kufar": {
     "url": "https://re.kufar.by/l/minsk/snyat/kvartiru-dolgosrochno/1k?cur=USD&gbx=b%3A27.513526658471655%2C53.88229558111987%2C27.53112194960936%2C53.894363476915245&prc=r%3A300%2C400&size=30",
-    "command": "[...document.querySelectorAll(`a[data-testid^='kufar-realty-card-']`)].map(a=>a.href)"
+    "command": "[...document.querySelectorAll(`a[data-testid^='kufar-realty-card-']`)].map(a=>a.href)",
+    "normalization": {
+      "removeParams": ["searchId", "rank", "utm_source", "utm_medium", "utm_campaign"]
+    }
   }
 }
