@@ -106,18 +106,120 @@ The application checks if a link already exists in the CSV file before adding it
 3. Only add links that don't already exist in the CSV file
 4. Report how many duplicates were filtered out
 
+## GitHub Gists Integration
+
+FlatCrawl can sync your CSV data to GitHub Gists, providing a backup and remote access to your data.
+
+### Setup
+
+1. Create a GitHub Personal Access Token:
+   - Go to [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
+   - Click "Generate new token" (classic)
+   - Give it a name (e.g., "FlatCrawl Gist Access")
+   - Select the "gist" scope
+   - Click "Generate token"
+   - Copy the token (you won't be able to see it again)
+
+2. Create a `.env` file in the root directory:
+   ```
+   # GitHub Personal Access Token with gist scope
+   GITHUB_TOKEN=your_personal_access_token_here
+
+   # Optional: ID of an existing Gist to update (leave empty to create a new one)
+   GIST_ID=
+
+   # Description for the Gist (used when creating a new Gist)
+   GIST_DESCRIPTION=FlatCrawl URL Database
+
+   # Filename for the CSV content in the Gist
+   GIST_FILENAME=urls.csv
+   ```
+
+3. Install the required dependencies:
+   ```bash
+   pnpm install
+   ```
+
+### Usage
+
+Sync your CSV data to GitHub Gists:
+
+```bash
+pnpm run sync-to-gist
+```
+
+Run the application and then sync to GitHub Gists:
+
+```bash
+pnpm run start-and-sync
+```
+
+### Notes
+
+- The first time you run the sync, a new Gist will be created
+- The Gist ID will be displayed in the console output
+- Add this Gist ID to your `.env` file to update the same Gist in future runs
+- If syncing fails, the script will retry up to 3 times before giving up
+
+## UI Viewer
+
+FlatCrawl includes a web-based UI for viewing and editing your data, with GitHub Gists integration.
+
+### Features
+
+- View all your scraped URLs in a table format
+- Edit boolean values (seen, ok, called, active) with simple toggles
+- Save changes to the local CSV file
+- Sync changes to GitHub Gists
+- Responsive design that works on desktop and mobile
+
+### Setup
+
+The UI viewer requires the same setup as the GitHub Gists integration (see above).
+
+### Usage
+
+Start the UI viewer:
+
+```bash
+pnpm run viewer
+```
+
+Then open your browser to:
+
+```
+http://localhost:3000
+```
+
+### Using the UI
+
+1. **View Data**: All your scraped URLs will be displayed in a table
+2. **Edit Data**: Toggle the checkboxes to change boolean values
+3. **Save Changes**: Click the "Save Changes" button to update the local CSV file
+4. **Sync to Gist**: Click the "Sync to GitHub Gist" button to sync your changes to GitHub
+
+### Notes
+
+- The UI automatically loads data from your local CSV file
+- Changes are not saved until you click the "Save Changes" button
+- Syncing to GitHub Gist is a separate step after saving
+
 ## Development
 
 ### Project Structure
 
 - `index.ts`: Main application file
+- `syncToGist.ts`: Script for syncing CSV data to GitHub Gists
 - `config.json`: Configuration file
 - `urls.csv`: CSV file for storing links
+- `.env`: Environment variables (not tracked in git)
 - `tsconfig.json`: TypeScript configuration
 
 ### Dependencies
 
 - Puppeteer: For browser automation
+- Octokit: For GitHub API integration
+- Dotenv: For loading environment variables
 - TypeScript: For type-safe JavaScript
 
 ## License

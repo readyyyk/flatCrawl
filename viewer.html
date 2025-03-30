@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlatCrawl Data Viewer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .actions {
+            margin-bottom: 20px;
+        }
+        .table-responsive {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .form-check-input {
+            cursor: pointer;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .url-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="header">
+            <h1>FlatCrawl Data Viewer</h1>
+            <div class="actions">
+                <button id="saveBtn" class="btn btn-primary">Save Changes</button>
+                <button id="syncBtn" class="btn btn-success">Sync to GitHub Gist</button>
+            </div>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Source</th>
+                        <th>URL</th>
+                        <th>Date Added</th>
+                        <th>Seen</th>
+                        <th>OK</th>
+                        <th>Called</th>
+                        <th>Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTable">
+                    <!-- Data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div id="loading" class="loading" style="display: none;">
+        <div>
+            <div class="spinner-border" role="status"></div>
+            <div>Processing...</div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let csvData = [];
+        let hasChanges = false;
+
+        // DOM elements
+        const dataTable = document.getElementById('dataTable');
+        const saveBtn = document.getElementById('saveBtn');
+        const syncBtn = document.getElementById('syncBtn');
+        const statusEl = document.getElementById('status');
+        const loadingEl = document.getElementById('loading');
+
+        // Format date from Unix timestamp
+        function formatDate(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleString();
+        }
+
+        // Show status message
+        function showStatus(message, isError = false) {
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + (isError ? 'error' : 'success');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show/hide loading indicator
+        function setLoading(isLoading) {
+            loadingEl.style.display = isLoading ? 'flex' : 'none';
+        }
+
+        // Fetch data from the server
+        async function fetchData() {
+            try {
+                setLoading(true);
+                const response = await fetch('/api/data');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                
+                csvData = await response.json();
+                renderTable();
+                showStatus('Data loaded successfully');
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showStatus('Error loading data: ' + error.message, true);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Render the table with data
+        function renderTable() {
+            dataTable.innerHTML = '';
+            
+            csvData.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                // ID
+                const idCell = document.createElement('td');
+                idCell.textContent = row.id;
+                tr.appendChild(idCell);
+                
+                // Source
+                const sourceCell = document.createElement('td');
+                sourceCell.textContent = row.source;
+                tr.appendChild(sourceCell);
+                
+                // URL
+                const urlCell = document.createElement('td');
+                urlCell.className = 'url-cell';
+                const urlLink = document.createElement('a');
+                urlLink.href = row.url;
+                urlLink.textContent = row.url;
+                urlLink.target = '_blank';
+                urlCell.appendChild(urlLink);
+                tr.appendChild(urlCell);
+                
+                // Date Added
+                const dateCell = document.createElement('td');
+                dateCell.textContent = formatDate(row.dateAdded);
+                tr.appendChild(dateCell);
+                
+                // Boolean fields (Seen, OK, Called, Active)
+                const booleanFields = ['seen', 'ok', 'called', 'active'];
+                
+                booleanFields.forEach(field => {
+                    const cell = document.createElement('td');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'form-check-input';
+                    checkbox.checked = row[field];
+                    checkbox.dataset.id = row.id;
+                    checkbox.dataset.field = field;
+                    
+                    checkbox.addEventListener('change', () => {
+                        // Update the data
+                        const rowIndex = csvData.findIndex(r => r.id === row.id);
+                        if (rowIndex !== -1) {
+                            csvData[rowIndex][field] = checkbox.checked;
+                            hasChanges = true;
+                        }
+                    });
+                    
+                    cell.appendChild(checkbox);
+                    tr.appendChild(cell);
+                });
+                
+                // Actions
+                const actionsCell = document.createElement('td');
+                const openBtn = document.createElement('button');
+                openBtn.className = 'btn btn-sm btn-outline-primary';
+                openBtn.textContent = 'Open';
+                openBtn.addEventListener('click', () => {
+                    window.open(row.url, '_blank');
+                });
+                actionsCell.appendChild(openBtn);
+                tr.appendChild(actionsCell);
+                
+                dataTable.appendChild(tr);
+            });
+        }
+
+        // Save changes to the server
+        async function saveChanges() {
+            if (!hasChanges) {
+                showStatus('No changes to save');
+                return;
+            }
+            
+            try {
+                setLoading(true);
+                const response = await fetch('/api/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(csvData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save changes');
+                }
+                
+                const result = await response.json();
+                showStatus(result.message);
+                hasChanges = false;
+            } catch (error) {
+                console.error('Error saving changes:', error);
+                showStatus('Error saving changes: ' + error.message, true);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Sync to GitHub Gist
+        async function syncToGist() {
+            try {
+                setLoading(true);
+                const response = await fetch('/api/sync', {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to sync to GitHub Gist');
+                }
+                
+                const result = await response.json();
+                showStatus(result.message);
+            } catch (error) {
+                console.error('Error syncing to Gist:', error);
+                showStatus('Error syncing to Gist: ' + error.message, true);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Event listeners
+        saveBtn.addEventListener('click', saveChanges);
+        syncBtn.addEventListener('click', syncToGist);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
+</body>
+</html>
